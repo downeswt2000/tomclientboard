@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tom's Client Board</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #ffffff; --bg2: #f5f5f3; --bg3: #efefec;
+  --text: #1a1a18; --text2: #5a5a57; --text3: #8a8a86;
+  --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.25);
+  --purple: #7F77DD; --purple-l: #EEEDFE; --purple-d: #3C3489;
+  --teal: #1D9E75; --teal-l: #E1F5EE; --teal-d: #085041;
+  --blue: #378ADD; --blue-l: #E6F1FB; --blue-d: #185FA5;
+  --amber-l: #FAEEDA; --amber-d: #633806;
+  --coral-l: #FAECE7; --coral-d: #712B13;
+  --green-l: #EAF3DE; --green-d: #27500A;
+  --rad: 8px; --radl: 12px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#1c1c1a; --bg2:#252523; --bg3:#2e2e2b;
+    --text:#f0f0ec; --text2:#a0a09c; --text3:#6a6a66;
+    --border:rgba(255,255,255,0.1); --border2:rgba(255,255,255,0.22);
+    --purple-l:#2a2852; --purple-d:#c8c4f4;
+    --teal-l:#0a2e22; --teal-d:#9fe1cb;
+    --blue-l:#0c1e33; --blue-d:#85b7eb;
+    --amber-l:#2e1e06; --amber-d:#fac775;
+    --coral-l:#2e1208; --coral-d:#f0997b;
+    --green-l:#111f06; --green-d:#c0dd97;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg3);color:var(--text);min-height:100vh}
+.app{max-width:1200px;margin:0 auto;padding:1.25rem 1rem 3rem}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px}
+.top-bar h1{font-size:17px;font-weight:500}
+.date-str{font-size:12px;color:var(--text3)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:0.5px solid var(--border);padding-bottom:0}
+.tab{font-size:13px;padding:7px 14px;border:none;background:transparent;cursor:pointer;color:var(--text2);font-family:var(--font);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--text);border-bottom-color:var(--text)}
+
+/* toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:160px}
+.search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text3);pointer-events:none}
+.search-wrap input{width:100%;padding:7px 9px 7px 30px;font-size:13px;border:0.5px solid var(--border);border-radius:99px;background:var(--bg);color:var(--text);font-family:var(--font);outline:none}
+.filter-btn{font-size:12px;padding:5px 12px;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font)}
+.filter-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.action-btn{font-size:12px;padding:5px 12px;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px}
+.action-btn:hover{background:var(--bg2)}
+
+/* day tabs */
+.day-row{display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.day-row span{font-size:12px;color:var(--text2)}
+.day-chip{font-size:11px;padding:3px 9px;border-radius:99px;border:0.5px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--font)}
+.day-chip.sel{background:var(--purple-l);color:var(--purple-d);border-color:var(--purple)}
+
+/* stats */
+.stats-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.stat{flex:1;min-width:80px;background:var(--bg2);border-radius:var(--rad);padding:9px 11px}
+.stat-num{font-size:20px;font-weight:500;line-height:1}
+.stat-label{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* section */
+.section-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);padding:0.2rem 0 0.5rem}
+.grid{display:grid;gap:8px;margin-bottom:14px}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-auto{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.grid-wide{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+@media(max-width:600px){.grid-3{grid-template-columns:1fr}}
+
+/* cards */
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radl);overflow:hidden}
+.card.pinned{border:1.5px solid var(--purple)}
+.card.all-done{border-color:var(--teal)!important}
+.card-header{padding:9px 11px 7px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border)}
+.client-name{font-size:13px;font-weight:500;display:flex;align-items:center;gap:4px}
+.pin-icon{font-size:11px;color:var(--purple)}
+.pill{font-size:11px;padding:2px 7px;border-radius:99px;font-weight:500}
+.pill-done{background:var(--teal-l);color:var(--teal-d)}
+.pill-partial{background:var(--amber-l);color:var(--amber-d)}
+.pill-empty{background:var(--bg2);color:var(--text3)}
+
+/* delivery day strip */
+.delivery-strip{padding:4px 11px;background:var(--bg2);display:flex;align-items:center;gap:6px;border-bottom:0.5px solid var(--border);flex-wrap:wrap}
+.delivery-label{font-size:11px;color:var(--text3);white-space:nowrap}
+.delivery-chip{font-size:10px;padding:2px 7px;border-radius:99px;border:0.5px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--font)}
+.delivery-chip.sel{background:var(--teal-l);color:var(--teal-d);border-color:var(--teal)}
+
+.tasks{padding:5px 7px}
+.task-row{display:flex;align-items:center;gap:6px;padding:4px 2px}
+.task-row:hover .del-btn{opacity:1}
+.check-btn{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.check-btn.checked{background:var(--teal);border-color:var(--teal)}
+.check-btn.checked::after{content:'';width:5px;height:3px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px);display:block}
+.task-label{font-size:12px;flex:1;line-height:1.3}
+.task-label.done-text{text-decoration:line-through;color:var(--text3)}
+.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.dot-daily{background:var(--blue)}
+.dot-day{background:var(--purple)}
+.day-badge{font-size:10px;padding:1px 5px;border-radius:99px;background:var(--purple-l);color:var(--purple-d);border:0.5px solid var(--purple);white-space:nowrap}
+.del-btn{opacity:0;background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0 2px;line-height:1}
+.no-tasks{font-size:11px;color:var(--text3);padding:4px 2px}
+.add-area{padding:3px 7px 7px}
+.add-open{display:flex;flex-direction:column;gap:5px}
+.add-open input{font-size:12px;padding:5px 8px;border-radius:6px;border:0.5px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--font);outline:none;width:100%}
+.recur-row{display:flex;gap:4px;flex-wrap:wrap}
+.rtoggle{font-size:10px;padding:3px 7px;border-radius:99px;border:0.5px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--font)}
+.rtoggle.on{background:var(--blue-l);color:var(--blue-d);border-color:var(--blue)}
+.day-chips-row{display:flex;gap:3px;flex-wrap:wrap}
+.btn-add{font-size:12px;background:var(--text);color:var(--bg);border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:var(--font)}
+.btn-cancel{font-size:12px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-family:var(--font)}
+.add-trigger{background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:12px;display:flex;align-items:center;gap:4px;font-family:var(--font);padding:2px;width:100%}
+
+/* lead card */
+.lead-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radl);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lead-name{font-size:13px;font-weight:500}
+.lead-status{font-size:11px;padding:2px 8px;border-radius:99px;border:0.5px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--font)}
+.lead-status.contacted{background:var(--blue-l);color:var(--blue-d);border-color:var(--blue)}
+.lead-status.interested{background:var(--amber-l);color:var(--amber-d);border-color:#EF9F27}
+.lead-status.converted{background:var(--teal-l);color:var(--teal-d);border-color:var(--teal)}
+.lead-del{background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:14px;opacity:0}
+.lead-card:hover .lead-del{opacity:1}
+
+/* simple task rows */
+.simple-task-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rad);margin-bottom:6px}
+.simple-task-row .task-label{font-size:13px}
+.personal-task-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rad);margin-bottom:6px}
+
+/* modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg);border-radius:var(--radl);padding:1.25rem;width:320px;border:0.5px solid var(--border2)}
+.modal h3{font-size:15px;font-weight:500;margin-bottom:12px}
+.modal input{width:100%;font-size:13px;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--rad);background:var(--bg2);color:var(--text);font-family:var(--font);outline:none;margin-bottom:10px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal select{width:100%;font-size:13px;padding:7px 10px;border:0.5px solid var(--border2);border-radius:var(--rad);background:var(--bg2);color:var(--text);font-family:var(--font);outline:none;margin-bottom:10px}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--text3);padding:0.5rem 0 2rem;align-items:center}
+.leg-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.leg-box{width:9px;height:9px;border-radius:2px;border:1.5px solid var(--purple);display:inline-block}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top-bar">
+    <h1>Tom's Client Board</h1>
+    <span class="date-str" id="date-str"></span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('clients')">Clients</button>
+    <button class="tab" onclick="showTab('leads')">New leads</button>
+    <button class="tab" onclick="showTab('socials')">Socials</button>
+    <button class="tab" onclick="showTab('strategy')">Strategy</button>
+    <button class="tab" onclick="showTab('personal')">Personal</button>
+  </div>
+
+  <!-- CLIENTS TAB -->
+  <div id="tab-clients">
+    <div class="toolbar">
+      <div class="search-wrap"><i class="ti ti-search"></i><input id="search" placeholder="Search clients..." oninput="renderClients()"></div>
+      <button class="filter-btn active" id="f-all" onclick="setFilter('all')">All</button>
+      <button class="filter-btn" id="f-todo" onclick="setFilter('todo')">To do</button>
+      <button class="filter-btn" id="f-done" onclick="setFilter('done')">Done</button>
+      <button class="action-btn" onclick="openAddClient()"><i class="ti ti-plus"></i> Add client</button>
+      <button class="action-btn" onclick="resetDay()">New day ↺</button>
+    </div>
+    <div class="day-row">
+      <span>Day:</span>
+      <div id="day-tabs"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num" id="s-done">0</div><div class="stat-label">clients complete</div></div>
+      <div class="stat"><div class="stat-num" id="s-tasks">0</div><div class="stat-label">tasks done</div></div>
+      <div class="stat"><div class="stat-num" id="s-left">0</div><div class="stat-label">remaining</div></div>
+    </div>
+    <div class="section-label">Priority clients</div>
+    <div class="grid grid-3" id="grid-priority"></div>
+    <div class="section-label">All clients</div>
+    <div class="grid grid-auto" id="grid-rest"></div>
+    <div class="legend">
+      <span><span class="leg-dot" style="background:var(--blue)"></span> daily recurring</span>
+      <span><span class="leg-dot" style="background:var(--purple)"></span> day-specific</span>
+      <span><span class="leg-box"></span> priority client</span>
+    </div>
+  </div>
+
+  <!-- LEADS TAB -->
+  <div id="tab-leads" style="display:none">
+    <div class="toolbar">
+      <div class="search-wrap"><i class="ti ti-search"></i><input id="lead-search" placeholder="Search leads..." oninput="renderLeads()"></div>
+      <button class="action-btn" onclick="openAddLead()"><i class="ti ti-plus"></i> Add lead</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num" id="l-total">0</div><div class="stat-label">total leads</div></div>
+      <div class="stat"><div class="stat-num" id="l-contacted">0</div><div class="stat-label">contacted</div></div>
+      <div class="stat"><div class="stat-num" id="l-converted">0</div><div class="stat-label">converted</div></div>
+    </div>
+    <div class="section-label">Leads pipeline</div>
+    <div class="grid grid-wide" id="leads-grid"></div>
+  </div>
+
+  <!-- SOCIALS TAB -->
+  <div id="tab-socials" style="display:none">
+    <div class="toolbar">
+      <button class="action-btn" onclick="resetSocials()">New day ↺</button>
+    </div>
+    <div class="day-row">
+      <span>Day:</span>
+      <div id="socials-day-tabs"></div>
+    </div>
+    <div class="section-label">This day's tasks</div>
+    <div id="socials-tasks"></div>
+    <div style="margin-top:14px">
+      <div class="section-label">Add a socials task</div>
+      <div class="add-open" style="max-width:400px">
+        <input id="socials-inp" placeholder="Task name..." onkeydown="if(event.key==='Enter')addSocialsTask()">
+        <div class="recur-row" id="socials-recur-row">
+          <button class="rtoggle on" id="sr-oneoff" onclick="setSocialsMode('one-off')">one-off</button>
+          <button class="rtoggle" id="sr-daily" onclick="setSocialsMode('daily')">daily</button>
+          <button class="rtoggle" id="sr-day" onclick="setSocialsMode('day-specific')">specific days</button>
+        </div>
+        <div class="day-chips-row" id="socials-day-sel" style="display:none"></div>
+        <div style="display:flex;gap:6px"><button class="btn-add" onclick="addSocialsTask()">Add</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STRATEGY TAB -->
+  <div id="tab-strategy" style="display:none">
+    <div class="section-label">Strategy tasks</div>
+    <div id="strategy-tasks"></div>
+    <div style="margin-top:10px;max-width:400px">
+      <div class="add-open">
+        <input id="strategy-inp" placeholder="Add a strategy task..." onkeydown="if(event.key==='Enter')addStrategyTask()">
+        <div style="display:flex;gap:6px"><button class="btn-add" onclick="addStrategyTask()">Add</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERSONAL TAB -->
+  <div id="tab-personal" style="display:none">
+    <div class="section-label">Personal to-dos</div>
+    <div id="personal-tasks"></div>
+    <div style="margin-top:10px;max-width:400px">
+      <div class="add-open">
+        <input id="personal-inp" placeholder="Add a personal task..." onkeydown="if(event.key==='Enter')addPersonalTask()">
+        <div style="display:flex;gap:6px"><button class="btn-add" onclick="addPersonalTask()">Add</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal-bg" id="modal-client">
+  <div class="modal">
+    <h3>Add new client</h3>
+    <input id="modal-client-name" placeholder="Client name..." onkeydown="if(event.key==='Enter')confirmAddClient()">
+    <select id="modal-client-priority">
+      <option value="normal">Regular client</option>
+      <option value="priority">Priority client (pinned)</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-client')">Cancel</button>
+      <button class="btn-add" onclick="confirmAddClient()">Add client</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD LEAD MODAL -->
+<div class="modal-bg" id="modal-lead">
+  <div class="modal">
+    <h3>Add new lead</h3>
+    <input id="modal-lead-name" placeholder="Business name..." onkeydown="if(event.key==='Enter')confirmAddLead()">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-lead')">Cancel</button>
+      <button class="btn-add" onclick="confirmAddLead()">Add lead</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const todayJs = new Date().getDay();
+const todayIdx = todayJs === 0 ? 6 : todayJs - 1;
+let currentDay = todayIdx;
+let socialsDay = todayIdx;
+let _filter = 'all';
+let activeInput = null;
+let recurMode = {};
+let selDays = {};
+let socialsMode = 'one-off';
+let socialsSelDays = [];
+let nextId = 500;
+
+const STORAGE_KEY = 'boss_client_board_v1';
+
+const CLIENTS_DEFAULT = {"Bayley & Sage - Distribution Center":{"tasks":[],"priority":true,"deliveryDays":[]},"The Black Horse Amberley":{"tasks":[],"priority":true,"deliveryDays":[]},"Local and Wild Chelsea Ltd t/a The Pig's Ear":{"tasks":[],"priority":false,"deliveryDays":[]},"Caper & Berry":{"tasks":[],"priority":true,"deliveryDays":[]},"Sussex Soho Ltd t/a Sussex Restaurant":{"tasks":[],"priority":false,"deliveryDays":[]},"Priory Farm":{"tasks":[],"priority":false,"deliveryDays":[]},"Florence Road market":{"tasks":[],"priority":false,"deliveryDays":[]},"The Pig in the South Downs":{"tasks":[],"priority":false,"deliveryDays":[]},"Local and Wild Wimbledon Ltd t/a The Black Lamb":{"tasks":[],"priority":false,"deliveryDays":[]},"Two Many Cooks":{"tasks":[],"priority":false,"deliveryDays":[]},"The Shepherd & Dog":{"tasks":[],"priority":false,"deliveryDays":[]},"Gladwin Brothers Enterprises t/a Rabbit Restaurant":{"tasks":[],"priority":false,"deliveryDays":[]},"CASTLE HOTEL WINDSOR":{"tasks":[],"priority":false,"deliveryDays":[]},"Charlie's Farm":{"tasks":[],"priority":false,"deliveryDays":[]},"The Seaview Hospitality Ltd.":{"tasks":[],"priority":false,"deliveryDays":[]},"Mainevent catering":{"tasks":[],"priority":false,"deliveryDays":[]},"Brighton and Hove Albion Lancing":{"tasks":[],"priority":false,"deliveryDays":[]},"The Shed Notting Hill t/a The Shed Restaurant":{"tasks":[],"priority":false,"deliveryDays":[]},"Nutbourne Vineyard":{"tasks":[],"priority":false,"deliveryDays":[]},"Keymer Brook Farm T/A Berries on tap":{"tasks":[],"priority":false,"deliveryDays":[]},"Little Tums Catering Ltd":{"tasks":[],"priority":false,"deliveryDays":[]},"The Holland Kensington":{"tasks":[],"priority":false,"deliveryDays":[]},"Village green farm shop ltd @ DENBIES":{"tasks":[],"priority":false,"deliveryDays":[]},"Village Greens Farm Shop Ltd @ Ockley":{"tasks":[],"priority":false,"deliveryDays":[]},"The Sussex Peasant":{"tasks":[],"priority":false,"deliveryDays":[]},"Pallant Stores Ltd T/A Pallants of Arundel":{"tasks":[],"priority":false,"deliveryDays":[]},"Lodsworth Larder":{"tasks":[],"priority":false,"deliveryDays":[]},"Field Food":{"tasks":[],"priority":false,"deliveryDays":[]},"A pub in Locksbottom limited":{"tasks":[],"priority":false,"deliveryDays":[]},"Garden Cottage Nursery":{"tasks":[],"priority":false,"deliveryDays":[]},"Copper & Ivy Ltd":{"tasks":[],"priority":false,"deliveryDays":[]},"Moulsecoomb Community Market":{"tasks":[],"priority":false,"deliveryDays":[]},"The Anchor (Ripley)":{"tasks":[],"priority":false,"deliveryDays":[]},"Taste-Buds":{"tasks":[],"priority":false,"deliveryDays":[]},"The Vintage Rose":{"tasks":[],"priority":false,"deliveryDays":[]},"The Greenhouse at Stane Street":{"tasks":[],"priority":false,"deliveryDays":[]},"Horse Guards Inn Ltd":{"tasks":[],"priority":false,"deliveryDays":[]},"The Red Lion Shamley Green":{"tasks":[],"priority":false,"deliveryDays":[]},"Woodhorn Farm Ltd":{"tasks":[],"priority":false,"deliveryDays":[]},"Fittleworth Stores":{"tasks":[],"priority":false,"deliveryDays":[]},"BAR Local and Wild Chelsea Ltd t/a The Pig's Ear":{"tasks":[],"priority":false,"deliveryDays":[]},"Meadow Stores":{"tasks":[],"priority":false,"deliveryDays":[]},"Sussex Surplus CIC":{"tasks":[],"priority":false,"deliveryDays":[]}};
+
+function defaultState() {
+  // Deep clone defaults so tasks etc. are fresh
+  const clients = JSON.parse(JSON.stringify(CLIENTS_DEFAULT));
+  return { clients, leads: [], socials: [], strategy: [], personal: [] };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      nextId = s.nextId || 500;
+      const saved = s.data;
+      const merged = defaultState();
+      Object.keys(saved.clients || {}).forEach(c => {
+        if (merged.clients[c]) {
+          merged.clients[c].tasks = saved.clients[c].tasks || [];
+          merged.clients[c].priority = saved.clients[c].priority;
+          merged.clients[c].deliveryDays = saved.clients[c].deliveryDays || [];
+        } else {
+          merged.clients[c] = saved.clients[c];
+          if (!merged.clients[c].deliveryDays) merged.clients[c].deliveryDays = [];
+        }
+      });
+      merged.leads = saved.leads || [];
+      merged.socials = saved.socials || [];
+      merged.strategy = saved.strategy || [];
+      merged.personal = saved.personal || [];
+      return merged;
+    }
+  } catch(e) {}
+  return defaultState();
+}
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ data: state, nextId })); } catch(e) {}
+}
+
+let state = loadState();
+if (!state.strategy) state.strategy = [];
+if (!state.personal) state.personal = [];
+if (!state.socials) state.socials = [];
+
+// --- TABS ---
+function showTab(t) {
+  ['clients','leads','socials','strategy','personal'].forEach(x => {
+    document.getElementById('tab-'+x).style.display = x===t ? '' : 'none';
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach((el,i) => { const names=['clients','leads','socials','strategy','personal']; el.classList.toggle('active', names[i]===t); });
+  });
+  if (t==='clients') renderClients();
+  if (t==='leads') renderLeads();
+  if (t==='socials') { buildSocialsDayTabs(); renderSocials(); }
+  if (t==='strategy') renderStrategy();
+  if (t==='personal') renderPersonal();
+}
+
+// --- DAY TABS ---
+function buildDayTabs() {
+  const el = document.getElementById('day-tabs');
+  el.innerHTML = '';
+  DAYS.forEach((d,i) => {
+    const b = document.createElement('button');
+    b.className = 'day-chip'+(i===currentDay?' sel':'');
+    b.textContent = d+(i===todayIdx?' ✦':'');
+    b.onclick = () => { currentDay=i; buildDayTabs(); renderClients(); };
+    el.appendChild(b);
+  });
+}
+function buildSocialsDayTabs() {
+  const el = document.getElementById('socials-day-tabs');
+  if (!el) return;
+  el.innerHTML = '';
+  DAYS.forEach((d,i) => {
+    const b = document.createElement('button');
+    b.className = 'day-chip'+(i===socialsDay?' sel':'');
+    b.textContent = d+(i===todayIdx?' ✦':'');
+    b.onclick = () => { socialsDay=i; buildSocialsDayTabs(); renderSocials(); };
+    el.appendChild(b);
+  });
+}
+
+// --- CLIENTS ---
+function taskVisible(t, dayIdx) {
+  if (t.type==='daily') return true;
+  if (t.type==='day-specific') return t.days.includes(dayIdx);
+  return true;
+}
+function getProgress(c) {
+  const tasks = (state.clients[c]?.tasks||[]).filter(t=>taskVisible(t,currentDay));
+  return { done: tasks.filter(t=>t.done).length, total: tasks.length };
+}
+function setFilter(f) {
+  _filter=f;
+  ['all','todo','done'].forEach(x=>document.getElementById('f-'+x).classList.toggle('active',x===f));
+  renderClients();
+}
+function sk(c) { return c.replace(/[\s'!&@/,.()\-]/g,'_').replace(/[^a-zA-Z0-9_]/g,''); }
+
+function makeClientCard(c, pinned) {
+  const p = getProgress(c);
+  const allDone = p.total>0 && p.done===p.total;
+  let pillCls='pill-empty',pillTxt='—';
+  if(p.total>0){ pillCls=p.done===p.total?'pill-done':'pill-partial'; pillTxt=p.done===p.total?'Done':p.done+'/'+p.total; }
+  const visible = (state.clients[c]?.tasks||[]).filter(t=>taskVisible(t,currentDay));
+  const tasksHTML = visible.length ? visible.map(t=>{
+    const dot = t.type==='daily'?'<span class="dot dot-daily"></span>':t.type==='day-specific'?'<span class="dot dot-day"></span>':'';
+    const badge = t.type==='day-specific'?`<span class="day-badge">${t.days.map(d=>DAYS[d]).join(',')}</span>`:'';
+    return `<div class="task-row">
+      <button class="check-btn ${t.done?'checked':''}" onclick="toggleClientTask('${sk(c)}',${t.id})"></button>
+      ${dot}<span class="task-label ${t.done?'done-text':''}">${t.text}</span>${badge}
+      <button class="del-btn" onclick="delClientTask('${sk(c)}',${t.id})"><i class="ti ti-x"></i></button>
+    </div>`;
+  }).join('') : '<div class="no-tasks">No tasks for this day</div>';
+
+  const isActive = activeInput===c;
+  const rMode = recurMode[c]||'one-off';
+  const selD = selDays[c]||[];
+  let addHTML;
+  if (isActive) {
+    const dayChips = DAYS.map((d,i)=>`<button class="day-chip ${selD.includes(i)?'sel':''}" onclick="toggleDayChip('${sk(c)}',${i})">${d}</button>`).join('');
+    addHTML=`<div class="add-open">
+      <input id="inp-${sk(c)}" placeholder="Task name..." onkeydown="handleClientKey(event,'${sk(c)}')">
+      <div class="recur-row">
+        <button class="rtoggle ${rMode==='one-off'?'on':''}" onclick="setRM('${sk(c)}','one-off')">one-off</button>
+        <button class="rtoggle ${rMode==='daily'?'on':''}" onclick="setRM('${sk(c)}','daily')">daily</button>
+        <button class="rtoggle ${rMode==='day-specific'?'on':''}" onclick="setRM('${sk(c)}','day-specific')">specific days</button>
+      </div>
+      ${rMode==='day-specific'?`<div class="day-chips-row">${dayChips}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:2px">
+        <button class="btn-add" onclick="submitClientTask('${sk(c)}')">Add</button>
+        <button class="btn-cancel" onclick="closeInput()">Cancel</button>
+      </div></div>`;
+  } else {
+    addHTML=`<button class="add-trigger" onclick="openInput('${c}')"><i class="ti ti-plus" style="font-size:14px"></i> add task</button>`;
+  }
+
+  // Delivery day strip
+  const deliveryDays = state.clients[c]?.deliveryDays || [];
+  const deliveryChips = DAYS.map((d,i)=>`<button class="delivery-chip${deliveryDays.includes(i)?' sel':''}" onclick="toggleDeliveryDay('${sk(c)}',${i})">${d}</button>`).join('');
+  const deliveryStrip = `<div class="delivery-strip"><span class="delivery-label">Delivery:</span>${deliveryChips}</div>`;
+
+  const card=document.createElement('div');
+  card.className='card'+(pinned?' pinned':'')+(allDone?' all-done':'');
+  card.innerHTML=`<div class="card-header"><span class="client-name">${pinned?'<i class="ti ti-pin pin-icon"></i>':''} ${c}</span><span class="pill ${pillCls}">${pillTxt}</span></div>${deliveryStrip}<div class="tasks">${tasksHTML}</div><div class="add-area">${addHTML}</div>`;
+  return card;
+}
+
+// Map from sk(name) back to full name
+const skToName = {};
+Object.keys(CLIENTS_DEFAULT).forEach(c => { skToName[sk(c)] = c; });
+
+function renderClients() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const priorityClients = Object.keys(state.clients).filter(c=>state.clients[c].priority);
+  const restClients = Object.keys(state.clients).filter(c=>!state.clients[c].priority);
+  let td=0,tl=0,cd=0;
+  Object.keys(state.clients).forEach(c=>{
+    const p=getProgress(c);td+=p.done;tl+=(p.total-p.done);
+    if(p.total>0&&p.done===p.total)cd++;
+  });
+  document.getElementById('s-done').textContent=cd;
+  document.getElementById('s-tasks').textContent=td;
+  document.getElementById('s-left').textContent=tl;
+  function passes(c){
+    if(q&&!c.toLowerCase().includes(q))return false;
+    const p=getProgress(c);
+    if(_filter==='done'&&(p.total===0||p.done<p.total))return false;
+    if(_filter==='todo'&&p.total>0&&p.done===p.total)return false;
+    return true;
+  }
+  const gp=document.getElementById('grid-priority'); gp.innerHTML='';
+  priorityClients.forEach(c=>{if(passes(c))gp.appendChild(makeClientCard(c,true));});
+  const gr=document.getElementById('grid-rest'); gr.innerHTML='';
+  restClients.forEach(c=>{if(passes(c))gr.appendChild(makeClientCard(c,false));});
+  Object.keys(state.clients).forEach(c=>{const inp=document.getElementById('inp-'+sk(c));if(inp)setTimeout(()=>inp.focus(),10);});
+}
+
+function resolveKey(keyOrSk) {
+  // try direct key first, then sk lookup
+  if (state.clients[keyOrSk]) return keyOrSk;
+  return skToName[keyOrSk] || keyOrSk;
+}
+
+function toggleDeliveryDay(csk, dayIdx) {
+  const c = resolveKey(csk);
+  if (!state.clients[c]) return;
+  if (!state.clients[c].deliveryDays) state.clients[c].deliveryDays = [];
+  const days = state.clients[c].deliveryDays;
+  const idx = days.indexOf(dayIdx);
+  if (idx > -1) {
+    days.splice(idx, 1);
+    // Remove any auto order-reminder tasks for this delivery day
+    const reminderDay = (dayIdx - 2 + 7) % 7;
+    state.clients[c].tasks = state.clients[c].tasks.filter(t =>
+      !(t.autoReminder && t.reminderFor === dayIdx)
+    );
+  } else {
+    days.push(dayIdx);
+    // Auto-add order reminder task 2 days before delivery
+    const reminderDay = (dayIdx - 2 + 7) % 7;
+    state.clients[c].tasks.push({
+      id: nextId++,
+      text: 'Order reminder',
+      done: false,
+      type: 'day-specific',
+      days: [reminderDay],
+      autoReminder: true,
+      reminderFor: dayIdx
+    });
+  }
+  save();
+  renderClients();
+}
+
+function toggleClientTask(csk,id){
+  const c=resolveKey(csk);
+  const t=(state.clients[c]?.tasks||[]).find(t=>t.id===id);
+  if(t){t.done=!t.done;save();renderClients();}
+}
+function delClientTask(csk,id){
+  const c=resolveKey(csk);
+  if(state.clients[c])state.clients[c].tasks=state.clients[c].tasks.filter(t=>t.id!==id);
+  save();renderClients();
+}
+function openInput(c){activeInput=c;renderClients();}
+function closeInput(){activeInput=null;renderClients();}
+function setRM(csk,m){const c=resolveKey(csk);recurMode[c]=m;renderClients();}
+function toggleDayChip(csk,i){
+  const c=resolveKey(csk);
+  if(!selDays[c])selDays[c]=[];
+  const a=selDays[c],idx=a.indexOf(i);
+  if(idx>-1)a.splice(idx,1);else a.push(i);
+  renderClients();
+}
+function submitClientTask(csk){
+  const c=resolveKey(csk);
+  const inp=document.getElementById('inp-'+sk(c)); if(!inp)return;
+  const text=inp.value.trim(); if(!text)return;
+  const mode=recurMode[c]||'one-off';
+  const days=mode==='day-specific'?(selDays[c]||[]).slice():[];
+  if(!state.clients[c])state.clients[c]={tasks:[],priority:false};
+  state.clients[c].tasks.push({id:nextId++,text,done:false,type:mode,days});
+  inp.value=''; save(); closeInput();
+}
+function handleClientKey(e,csk){if(e.key==='Enter')submitClientTask(csk);if(e.key==='Escape')closeInput();}
+function resetDay(){
+  Object.keys(state.clients).forEach(c=>{
+    state.clients[c].tasks=state.clients[c].tasks.filter(t=>t.type==='daily'||t.type==='day-specific').map(t=>({...t,done:false}));
+  });
+  state.socials=state.socials.filter(t=>t.type==='daily'||t.type==='day-specific').map(t=>({...t,done:false}));
+  save(); activeInput=null; renderClients();
+}
+
+function openAddClient(){document.getElementById('modal-client').classList.add('open');setTimeout(()=>document.getElementById('modal-client-name').focus(),50);}
+function confirmAddClient(){
+  const name=document.getElementById('modal-client-name').value.trim();
+  if(!name)return;
+  const isPriority=document.getElementById('modal-client-priority').value==='priority';
+  state.clients[name]={tasks:[],priority:isPriority,deliveryDays:[]};
+  document.getElementById('modal-client-name').value='';
+  closeModal('modal-client'); save(); renderClients();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// --- LEADS ---
+function renderLeads(){
+  const q=document.getElementById('lead-search').value.toLowerCase();
+  const leads=state.leads||[];
+  document.getElementById('l-total').textContent=leads.length;
+  document.getElementById('l-contacted').textContent=leads.filter(l=>l.status==='contacted'||l.status==='interested').length;
+  document.getElementById('l-converted').textContent=leads.filter(l=>l.status==='converted').length;
+  const grid=document.getElementById('leads-grid'); grid.innerHTML='';
+  const filtered=q?leads.filter(l=>l.name.toLowerCase().includes(q)):leads;
+  filtered.forEach(l=>{
+    const div=document.createElement('div');
+    div.className='lead-card';
+    const labels={new:'New',contacted:'Contacted',interested:'Interested',converted:'Converted ✓'};
+    div.innerHTML=`<span class="lead-name">${l.name}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="lead-status ${l.status!=='new'?l.status:''}" onclick="cycleLead(${l.id})">${labels[l.status]||'New'}</button>
+        <button class="lead-del" onclick="delLead(${l.id})"><i class="ti ti-x"></i></button>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+function cycleLead(id){const l=(state.leads||[]).find(l=>l.id===id);if(!l)return;const next={new:'contacted',contacted:'interested',interested:'converted',converted:'new'};l.status=next[l.status]||'new';save();renderLeads();}
+function delLead(id){state.leads=(state.leads||[]).filter(l=>l.id!==id);save();renderLeads();}
+function openAddLead(){document.getElementById('modal-lead').classList.add('open');setTimeout(()=>document.getElementById('modal-lead-name').focus(),50);}
+function confirmAddLead(){
+  const name=document.getElementById('modal-lead-name').value.trim();if(!name)return;
+  if(!state.leads)state.leads=[];
+  state.leads.push({id:nextId++,name,status:'new'});
+  document.getElementById('modal-lead-name').value='';closeModal('modal-lead');save();renderLeads();
+}
+
+// --- SOCIALS ---
+function setSocialsMode(m){
+  socialsMode=m;
+  ['one-off','daily','day-specific'].forEach(x=>document.getElementById('sr-'+x.replace('-','')).classList.toggle('on',x===m));
+  document.getElementById('socials-day-sel').style.display=m==='day-specific'?'flex':'none';
+  if(m==='day-specific') buildSocialsSelDays();
+}
+function buildSocialsSelDays(){
+  const el=document.getElementById('socials-day-sel'); el.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const b=document.createElement('button');
+    b.className='day-chip'+(socialsSelDays.includes(i)?' sel':'');
+    b.textContent=d;
+    b.onclick=()=>{const idx=socialsSelDays.indexOf(i);if(idx>-1)socialsSelDays.splice(idx,1);else socialsSelDays.push(i);buildSocialsSelDays();};
+    el.appendChild(b);
+  });
+}
+function addSocialsTask(){
+  const inp=document.getElementById('socials-inp');
+  const text=inp.value.trim();if(!text)return;
+  const days=socialsMode==='day-specific'?socialsSelDays.slice():[];
+  state.socials.push({id:nextId++,text,done:false,type:socialsMode,days});
+  inp.value='';save();renderSocials();
+}
+function renderSocials(){
+  const visible=(state.socials||[]).filter(t=>{
+    if(t.type==='daily')return true;
+    if(t.type==='day-specific')return t.days.includes(socialsDay);
+    return true;
+  });
+  const el=document.getElementById('socials-tasks'); el.innerHTML='';
+  if(!visible.length){el.innerHTML='<div class="no-tasks" style="padding:8px 0">No tasks for this day</div>';return;}
+  visible.forEach(t=>{
+    const div=document.createElement('div');
+    div.className='simple-task-row';
+    const dot=t.type==='daily'?'<span class="dot dot-daily" style="margin-right:2px"></span>':t.type==='day-specific'?'<span class="dot dot-day" style="margin-right:2px"></span>':'';
+    const badge=t.type==='day-specific'?`<span class="day-badge">${t.days.map(d=>DAYS[d]).join(',')}</span>`:'';
+    div.innerHTML=`<button class="check-btn ${t.done?'checked':''}" onclick="toggleSocials(${t.id})"></button>${dot}<span class="task-label ${t.done?'done-text':''}">${t.text}</span>${badge}<button class="del-btn" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delSocials(${t.id})"><i class="ti ti-x"></i></button>`;
+    el.appendChild(div);
+  });
+}
+function toggleSocials(id){const t=(state.socials||[]).find(t=>t.id===id);if(t){t.done=!t.done;save();renderSocials();}}
+function delSocials(id){state.socials=(state.socials||[]).filter(t=>t.id!==id);save();renderSocials();}
+function resetSocials(){state.socials=(state.socials||[]).filter(t=>t.type==='daily'||t.type==='day-specific').map(t=>({...t,done:false}));save();renderSocials();}
+
+// --- STRATEGY ---
+function renderStrategy(){
+  const el=document.getElementById('strategy-tasks'); el.innerHTML='';
+  if(!(state.strategy||[]).length){el.innerHTML='<div class="no-tasks" style="padding:8px 0">No strategy tasks yet</div>';return;}
+  (state.strategy||[]).forEach(t=>{
+    const div=document.createElement('div');
+    div.className='simple-task-row';
+    div.innerHTML=`<button class="check-btn ${t.done?'checked':''}" onclick="toggleStrategy(${t.id})"></button><span class="task-label ${t.done?'done-text':''}">${t.text}</span><button class="del-btn" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delStrategy(${t.id})"><i class="ti ti-x"></i></button>`;
+    el.appendChild(div);
+  });
+}
+function addStrategyTask(){
+  const inp=document.getElementById('strategy-inp');
+  const text=inp.value.trim();if(!text)return;
+  if(!state.strategy)state.strategy=[];
+  state.strategy.push({id:nextId++,text,done:false});
+  inp.value='';save();renderStrategy();
+}
+function toggleStrategy(id){const t=(state.strategy||[]).find(t=>t.id===id);if(t){t.done=!t.done;save();renderStrategy();}}
+function delStrategy(id){state.strategy=(state.strategy||[]).filter(t=>t.id!==id);save();renderStrategy();}
+
+// --- PERSONAL ---
+function renderPersonal(){
+  const el=document.getElementById('personal-tasks'); el.innerHTML='';
+  if(!(state.personal||[]).length){el.innerHTML='<div class="no-tasks" style="padding:8px 0">No personal tasks yet</div>';return;}
+  (state.personal||[]).forEach(t=>{
+    const div=document.createElement('div');
+    div.className='personal-task-row';
+    div.innerHTML=`<button class="check-btn ${t.done?'checked':''}" onclick="togglePersonal(${t.id})"></button><span class="task-label ${t.done?'done-text':''}">${t.text}</span><button class="del-btn" style="opacity:0" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0" onclick="delPersonal(${t.id})"><i class="ti ti-x"></i></button>`;
+    el.appendChild(div);
+  });
+}
+function addPersonalTask(){
+  const inp=document.getElementById('personal-inp');
+  const text=inp.value.trim();if(!text)return;
+  if(!state.personal)state.personal=[];
+  state.personal.push({id:nextId++,text,done:false});
+  inp.value='';save();renderPersonal();
+}
+function togglePersonal(id){const t=(state.personal||[]).find(t=>t.id===id);if(t){t.done=!t.done;save();renderPersonal();}}
+function delPersonal(id){state.personal=(state.personal||[]).filter(t=>t.id!==id);save();renderPersonal();}
+
+document.querySelectorAll('.modal-bg').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
+
+const now=new Date();
+document.getElementById('date-str').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+buildDayTabs();
+renderClients();
+</script>
+</body>
+</html>
